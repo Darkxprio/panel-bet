@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
     HistoryOutlined,
     PlaySquareOutlined,
+    LogoutOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Button, theme } from 'antd';
+import authService from '../services/authService';
+import modal from 'antd/es/modal';
 
 const { Header, Sider, Content } = Layout;
 
@@ -14,6 +17,26 @@ const DashboardLayout = () => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        const token = authService.getToken();
+        if (!token) {
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    const handleLogout = () => {
+        modal.confirm({
+            title: '¿Estás seguro de que quieres cerrar sesión?',
+            centered: true,
+            onOk: () => {
+                authService.logout();
+                navigate('/login');
+            },
+            okText: 'Sí, cerrar sesión',
+            cancelText: 'Cancelar'
+        })
+    }
 
     const {
         token: { colorBgContainer, borderRadiusLG },
@@ -40,6 +63,13 @@ const DashboardLayout = () => {
                             key: '/historial',
                             icon: <HistoryOutlined />,
                             label: 'Historial',
+                        },
+                        {
+                            key: 'logout',
+                            icon: <LogoutOutlined />,
+                            label: 'Cerrar Sesión',
+                            onClick: handleLogout,
+                            danger: true,
                         },
                     ]}
                 />
